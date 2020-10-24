@@ -15,10 +15,8 @@ public class FileModel {
 	private String name;
 	private String url;
 
-	
 	public FileModel() {
 		super();
-		// TODO Auto-generated constructor stub
 	}
 
 	public FileModel(String name, String url) {
@@ -26,7 +24,7 @@ public class FileModel {
 		this.name = name;
 		this.url = url;
 	}
-	
+
 	public Integer getId() {
 		return id;
 	}

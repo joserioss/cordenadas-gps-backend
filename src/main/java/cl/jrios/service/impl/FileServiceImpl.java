@@ -23,7 +23,9 @@ import com.drew.metadata.Metadata;
 import com.drew.metadata.Tag;
 
 import cl.jrios.model.FileModel;
+import cl.jrios.model.MetadataGPS;
 import cl.jrios.repo.IFileRepo;
+import cl.jrios.repo.IMetadataGPSRepo;
 import cl.jrios.service.IFileService;
 
 @Service
@@ -32,6 +34,9 @@ public class FileServiceImpl implements IFileService {
 	@Autowired
 	private IFileRepo repo;
 
+	@Autowired
+	private IMetadataGPSRepo repoGPS;
+	
     private final Path root = Paths.get("uploads");
 
     @Override
@@ -55,16 +60,42 @@ public class FileServiceImpl implements IFileService {
             newFile.setName(name);
             newFile.setUrl(url);
             saveDB(newFile);
-        	
             try {
 				Metadata metadata = ImageMetadataReader.readMetadata(file_metadata);
-				System.out.println(file_metadata);
+				MetadataGPS gps = new MetadataGPS();
+				
 				for (Directory directory : metadata.getDirectories()) {
 				    for (Tag tag : directory.getTags()) {
 				    	if(directory.getName().equals("GPS")) {
-				    		System.out.format("[%s] - %s = %s",
-						            directory.getName(), tag.getTagName(), tag.getDescription());
-				    	}				    				        
+				    		if(tag.getTagName().equals("GPS Latitude Ref")) {
+				    			gps.setLat_ref(tag.getDescription());
+				    		}
+				    		if(tag.getTagName().equals("GPS Latitude")) {
+				    			String latitud = tag.getDescription();
+				    			String[] parts = latitud.split(" ");
+				    			String grado = parts[0]; 
+				    			gps.setLat_grad(grado);
+				    			String minuto = parts[1]; 
+				    			gps.setLat_min(minuto);
+				    			String segundo = parts[2];
+				    			gps.setLat_sec(segundo);
+				    		}
+				    		if(tag.getTagName().equals("GPS Longitude Ref")) {
+				    			gps.setLon_ref(tag.getDescription());
+				    		}
+				    		if(tag.getTagName().equals("GPS Longitude")) {
+				    			String longitud = tag.getDescription();
+				    			String[] parts = longitud.split(" ");
+				    			String grado = parts[0]; 
+				    			gps.setLon_grad(grado);
+				    			String minuto = parts[1]; 
+				    			gps.setLon_min(minuto);
+				    			String segundo = parts[2];
+				    			gps.setLon_sec(segundo);
+				    		}
+				    	}		
+				    	repoGPS.save(gps);
+				    	
 				    }
 				    if (directory.hasErrors()) {
 				        for (String error : directory.getErrors()) {
