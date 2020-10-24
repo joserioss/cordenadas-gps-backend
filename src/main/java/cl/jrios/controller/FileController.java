@@ -34,14 +34,20 @@ public class FileController {
     public ResponseEntity<FileMessage> uploadFiles(@RequestParam("files")MultipartFile[] files){
         String message = "";
         try{
-            List<String> fileNames = new ArrayList<>();
+            List<File> fileNames = new ArrayList<>();
 
             Arrays.asList(files).stream().forEach(file->{
-                fileService.save(file);
-                fileNames.add(file.getOriginalFilename());
+                fileService.saveFile(file);
+                String name = file.getOriginalFilename();
+                String url = "localhost:8080/files/" + name;
+                File newFile = new File(name, url);
+                fileService.saveDB(newFile);
+                fileNames.add(newFile);
+                
             });
 
-            message = "Se subieron los archivos correctamente " + fileNames;
+            message = "Se subieron los archivos correctamente ";
+
             return ResponseEntity.status(HttpStatus.OK).body(new FileMessage(message));
         }catch (Exception e){
             message = "Fallo al subir los archivos";
@@ -51,20 +57,20 @@ public class FileController {
 
     @GetMapping("/files")
     public ResponseEntity<List<File>> getFiles(){
-        List<File> fileInfos = fileService.loadAll().map(path -> {
+        List<File> fileInfos = fileService.loadAllFile().map(path -> {
           String filename = path.getFileName().toString();
           String url = MvcUriComponentsBuilder.fromMethodName(FileController.class, "getFile",
                   path.getFileName().toString()).build().toString();
           return new File(filename, url);
         }).collect(Collectors.toList());
-
+        
         return ResponseEntity.status(HttpStatus.OK).body(fileInfos);
     }
 
 
     @GetMapping("/files/{filename:.+}")
     public ResponseEntity<Resource> getFile(@PathVariable String filename){
-        Resource file = fileService.load(filename);
+        Resource file = fileService.loadFile(filename);
         return ResponseEntity.ok().header(HttpHeaders.CONTENT_DISPOSITION,
                 "attachment; filename=\""+file.getFilename() + "\"").body(file);
     }

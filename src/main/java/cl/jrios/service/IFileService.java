@@ -1,10 +1,13 @@
 package cl.jrios.service;
 
 import java.nio.file.Path;
+import java.util.List;
 import java.util.stream.Stream;
 
 import org.springframework.core.io.Resource;
 import org.springframework.web.multipart.MultipartFile;
+
+import cl.jrios.model.File;
 
 public interface IFileService {
 
@@ -13,30 +16,39 @@ public interface IFileService {
 	 */
 
 	public void init();
+	
+	/**
+	 * Metodo para cargar un archivo
+	 */
+	public Resource loadFile(String filename);
+	
 
 	/**
 	 * Metodo para guardar los archivos
 	 */
-	public void save(MultipartFile file);
+	public void saveFile(MultipartFile file);
+	
+	public void saveDB(File file);
 
-	/**
-	 * Metodo para cargar un archivo
-	 */
-	public Resource load(String filename);
-
-	/**
-	 * Metodo para borrar todos los archivos cada vez que se inicie el servidor
-	 */
-	public void deleteAll();
-
+	
 	/**
 	 * Metodo para Cargar todos los archivos
 	 */
-	public Stream<Path> loadAll();
+	public Stream<Path> loadAllFile();
+	
+	public List<File> LoadAllDB();
+
+	
+	/**
+	 * Metodo para borrar todos los archivos cada vez que se inicie el servidor
+	 */
+	public void deleteAllFile();
+
 
 	/**
 	 * Metodo para Borrar un archivo
 	 */
 	public String deleteFile(String filename);
 
+	
 }

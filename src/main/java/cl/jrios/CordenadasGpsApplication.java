@@ -23,7 +23,7 @@ public class CordenadasGpsApplication implements CommandLineRunner{
 
 	@Override
 	public void run(String... arg) throws Exception {
-		fileService.deleteAll();
+		fileService.deleteAllFile();
 		fileService.init();
 	}
 

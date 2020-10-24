@@ -5,18 +5,25 @@ import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.stream.Stream;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
 import org.springframework.util.FileSystemUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import cl.jrios.model.File;
+import cl.jrios.repo.IFileRepo;
 import cl.jrios.service.IFileService;
 
 @Service
 public class FileServiceImpl implements IFileService {
+	
+	@Autowired
+	private IFileRepo repo;
 
     private final Path root = Paths.get("uploads");
 
@@ -30,17 +37,17 @@ public class FileServiceImpl implements IFileService {
     }
 
     @Override
-    public void save(MultipartFile file) {
+    public void saveFile(MultipartFile file) {
         try {
-            //copy (que queremos copiar, a donde queremos copiar)
             Files.copy(file.getInputStream(), this.root.resolve(file.getOriginalFilename()));
+            
         } catch (IOException e) {
             throw new RuntimeException("No se puede guardar el archivo. Error " + e.getMessage());
         }
     }
 
     @Override
-    public Resource load(String filename) {
+    public Resource loadFile(String filename) {
         try {
             Path file = root.resolve(filename);
             Resource resource = new UrlResource(file.toUri());
@@ -57,16 +64,12 @@ public class FileServiceImpl implements IFileService {
     }
 
     @Override
-    public void deleteAll() {
+    public void deleteAllFile() {
         FileSystemUtils.deleteRecursively(root.toFile());
     }
 
     @Override
-    public Stream<Path> loadAll(){
-        //Files.walk recorre nuestras carpetas (uploads) buscando los archivos
-        // el 1 es la profundidad o nivel que queremos recorrer
-        // :: Referencias a metodos
-        // Relativize sirve para crear una ruta relativa entre la ruta dada y esta ruta
+    public Stream<Path> loadAllFile(){
         try{
             return Files.walk(this.root,1).filter(path -> !path.equals(this.root))
                     .map(this.root::relativize);
@@ -85,6 +88,20 @@ public class FileServiceImpl implements IFileService {
             return "Error Borrando ";
         }
     }
+    
+    @Override
+    public void saveDB(File file) {
+    	repo.save(file);
+    }
 
+	@Override
+	public List<File> LoadAllDB() {
+		return repo.findAll();
+	}
+
+//	@Override
+//	public void deleteDBAll() {
+//		repo.deleteAll();
+//	}
 
 }
