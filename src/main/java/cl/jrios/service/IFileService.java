@@ -7,7 +7,7 @@ import java.util.stream.Stream;
 import org.springframework.core.io.Resource;
 import org.springframework.web.multipart.MultipartFile;
 
-import cl.jrios.model.File;
+import cl.jrios.model.FileModel;
 
 public interface IFileService {
 
@@ -26,9 +26,9 @@ public interface IFileService {
 	/**
 	 * Metodo para guardar los archivos
 	 */
-	public void saveFile(MultipartFile file);
+	public FileModel saveFile(MultipartFile file);
 	
-	public void saveDB(File file);
+	public void saveDB(FileModel file);
 
 	
 	/**
@@ -36,7 +36,7 @@ public interface IFileService {
 	 */
 	public Stream<Path> loadAllFile();
 	
-	public List<File> LoadAllDB();
+	public List<FileModel> LoadAllDB();
 
 	
 	/**

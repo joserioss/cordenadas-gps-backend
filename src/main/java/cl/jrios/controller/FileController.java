@@ -20,7 +20,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 
 import cl.jrios.message.FileMessage;
-import cl.jrios.model.File;
+import cl.jrios.model.FileModel;
 import cl.jrios.service.IFileService;
 
 @Controller
@@ -34,16 +34,10 @@ public class FileController {
     public ResponseEntity<FileMessage> uploadFiles(@RequestParam("files")MultipartFile[] files){
         String message = "";
         try{
-            List<File> fileNames = new ArrayList<>();
+            List<FileModel> fileNames = new ArrayList<>();
 
             Arrays.asList(files).stream().forEach(file->{
-                fileService.saveFile(file);
-                String name = file.getOriginalFilename();
-                String url = "localhost:8080/files/" + name;
-                File newFile = new File(name, url);
-                fileService.saveDB(newFile);
-                fileNames.add(newFile);
-                
+                fileNames.add(fileService.saveFile(file));               
             });
 
             message = "Se subieron los archivos correctamente ";
@@ -56,12 +50,13 @@ public class FileController {
     }
 
     @GetMapping("/files")
-    public ResponseEntity<List<File>> getFiles(){
-        List<File> fileInfos = fileService.loadAllFile().map(path -> {
+    public ResponseEntity<List<FileModel>> getFiles(){
+    	
+        List<FileModel> fileInfos = fileService.loadAllFile().map(path -> {
           String filename = path.getFileName().toString();
           String url = MvcUriComponentsBuilder.fromMethodName(FileController.class, "getFile",
                   path.getFileName().toString()).build().toString();
-          return new File(filename, url);
+          return new FileModel(filename, url);
         }).collect(Collectors.toList());
         
         return ResponseEntity.status(HttpStatus.OK).body(fileInfos);
@@ -86,5 +81,6 @@ public class FileController {
             return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(new FileMessage(message));
         }
     }
+
 
 }

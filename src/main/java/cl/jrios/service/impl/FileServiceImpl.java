@@ -1,5 +1,6 @@
 package cl.jrios.service.impl;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.nio.file.Files;
@@ -15,7 +16,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.FileSystemUtils;
 import org.springframework.web.multipart.MultipartFile;
 
-import cl.jrios.model.File;
+import com.drew.imaging.ImageMetadataReader;
+import com.drew.imaging.ImageProcessingException;
+import com.drew.metadata.Directory;
+import com.drew.metadata.Metadata;
+import com.drew.metadata.Tag;
+
+import cl.jrios.model.FileModel;
 import cl.jrios.repo.IFileRepo;
 import cl.jrios.service.IFileService;
 
@@ -37,13 +44,43 @@ public class FileServiceImpl implements IFileService {
     }
 
     @Override
-    public void saveFile(MultipartFile file) {
+    public FileModel saveFile(MultipartFile file) {
+    	FileModel newFile = new FileModel();
         try {
-            Files.copy(file.getInputStream(), this.root.resolve(file.getOriginalFilename()));
+        	Files.copy(file.getInputStream(), this.root.resolve(file.getOriginalFilename()));
+        	File file_metadata = new File(this.root.resolve(file.getOriginalFilename()).toString());
+            
+        	String name = file.getOriginalFilename();
+            String url = "localhost:8080/files/" + name;
+            newFile.setName(name);
+            newFile.setUrl(url);
+            saveDB(newFile);
+        	
+            try {
+				Metadata metadata = ImageMetadataReader.readMetadata(file_metadata);
+				System.out.println(file_metadata);
+				for (Directory directory : metadata.getDirectories()) {
+				    for (Tag tag : directory.getTags()) {
+				    	if(directory.getName().equals("GPS")) {
+				    		System.out.format("[%s] - %s = %s",
+						            directory.getName(), tag.getTagName(), tag.getDescription());
+				    	}				    				        
+				    }
+				    if (directory.hasErrors()) {
+				        for (String error : directory.getErrors()) {
+				            System.err.format("ERROR: %s", error);
+				        }
+				    }
+				}
+			} catch (ImageProcessingException e) {
+				e.printStackTrace();
+			}
             
         } catch (IOException e) {
+        	System.out.println(e.getMessage());
             throw new RuntimeException("No se puede guardar el archivo. Error " + e.getMessage());
         }
+        return newFile;
     }
 
     @Override
@@ -90,12 +127,12 @@ public class FileServiceImpl implements IFileService {
     }
     
     @Override
-    public void saveDB(File file) {
+    public void saveDB(FileModel file) {
     	repo.save(file);
     }
 
 	@Override
-	public List<File> LoadAllDB() {
+	public List<FileModel> LoadAllDB() {
 		return repo.findAll();
 	}
 

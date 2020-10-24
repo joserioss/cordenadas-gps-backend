@@ -6,7 +6,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
 @Entity
-public class File {
+public class FileModel {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -15,7 +15,13 @@ public class File {
 	private String name;
 	private String url;
 
-	public File(String name, String url) {
+	
+	public FileModel() {
+		super();
+		// TODO Auto-generated constructor stub
+	}
+
+	public FileModel(String name, String url) {
 		super();
 		this.name = name;
 		this.url = url;
