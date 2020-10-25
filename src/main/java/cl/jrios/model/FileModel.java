@@ -14,6 +14,8 @@ public class FileModel {
 
 	private String name;
 	private String url;
+	private String lat;
+	private String lon;
 
 	public FileModel() {
 		super();
@@ -47,6 +49,22 @@ public class FileModel {
 
 	public void setUrl(String url) {
 		this.url = url;
+	}
+
+	public String getLat() {
+		return lat;
+	}
+
+	public void setLat(String lat) {
+		this.lat = lat;
+	}
+
+	public String getLon() {
+		return lon;
+	}
+
+	public void setLon(String lon) {
+		this.lon = lon;
 	}
 
 }

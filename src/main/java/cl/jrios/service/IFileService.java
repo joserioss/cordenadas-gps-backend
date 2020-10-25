@@ -22,6 +22,8 @@ public interface IFileService {
 	 */
 	public Resource loadFile(String filename);
 	
+	public FileModel findByName(String filename);
+	
 
 	/**
 	 * Metodo para guardar los archivos

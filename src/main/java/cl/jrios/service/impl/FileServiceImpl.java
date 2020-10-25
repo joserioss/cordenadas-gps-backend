@@ -7,6 +7,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +28,7 @@ import cl.jrios.model.MetadataGPS;
 import cl.jrios.repo.IFileRepo;
 import cl.jrios.repo.IMetadataGPSRepo;
 import cl.jrios.service.IFileService;
+import cl.jrios.util.Conversor;
 
 @Service
 public class FileServiceImpl implements IFileService {
@@ -50,13 +52,14 @@ public class FileServiceImpl implements IFileService {
 
     @Override
     public FileModel saveFile(MultipartFile file) {
+    	Conversor conv = new Conversor();
     	FileModel newFile = new FileModel();
         try {
         	Files.copy(file.getInputStream(), this.root.resolve(file.getOriginalFilename()));
         	File file_metadata = new File(this.root.resolve(file.getOriginalFilename()).toString());
             
         	String name = file.getOriginalFilename();
-            String url = "localhost:8080/files/" + name;
+            String url = "http://localhost:8080/files/" + name;
             newFile.setName(name);
             newFile.setUrl(url);
             saveDB(newFile);
@@ -94,8 +97,9 @@ public class FileServiceImpl implements IFileService {
 				    			gps.setLon_sec(segundo);
 				    		}
 				    	}		
+				    				    	
 				    	repoGPS.save(gps);
-				    	
+				    
 				    }
 				    if (directory.hasErrors()) {
 				        for (String error : directory.getErrors()) {
@@ -103,6 +107,10 @@ public class FileServiceImpl implements IFileService {
 				        }
 				    }
 				}
+				List<String> listaLatLon = conv.GMS_GD(gps);
+		    	newFile.setLat(listaLatLon.get(0));
+		    	newFile.setLon(listaLatLon.get(1));
+		    	saveDB(newFile);
 			} catch (ImageProcessingException e) {
 				e.printStackTrace();
 			}
@@ -131,6 +139,16 @@ public class FileServiceImpl implements IFileService {
         }
     }
 
+	@Override
+	public FileModel findByName(String filename) {
+		Optional<FileModel> op = repo.findByName(filename);
+		if(op.isPresent()) {
+			return op.get();
+		}else {
+			return new FileModel();	
+		}
+	}
+	
     @Override
     public void deleteAllFile() {
         FileSystemUtils.deleteRecursively(root.toFile());
@@ -166,6 +184,8 @@ public class FileServiceImpl implements IFileService {
 	public List<FileModel> LoadAllDB() {
 		return repo.findAll();
 	}
+
+
 
 //	@Override
 //	public void deleteDBAll() {

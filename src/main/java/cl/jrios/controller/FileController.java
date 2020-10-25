@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 
 import cl.jrios.message.FileMessage;
 import cl.jrios.model.FileModel;
@@ -51,12 +50,10 @@ public class FileController {
 
     @GetMapping("/files")
     public ResponseEntity<List<FileModel>> getFiles(){
-    	
         List<FileModel> fileInfos = fileService.loadAllFile().map(path -> {
           String filename = path.getFileName().toString();
-          String url = MvcUriComponentsBuilder.fromMethodName(FileController.class, "getFile",
-                  path.getFileName().toString()).build().toString();
-          return new FileModel(filename, url);
+          FileModel imagen = fileService.findByName(filename);
+          return imagen;
         }).collect(Collectors.toList());
         
         return ResponseEntity.status(HttpStatus.OK).body(fileInfos);
